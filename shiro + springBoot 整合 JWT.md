@@ -1,8 +1,10 @@
 
 ## JWTUtil
 我们利用 JWT 的工具类来生成我们的 token，这个工具类主要有生成 token 和 校验 token 两个方法
-
 生成 token 时，指定 token 过期时间 ```EXPIRE_TIME``` 和签名密钥 ```SECRET```，然后将 date 和 username 写入 token 中，并使用带有密钥的 HS256 签名算法进行签名
+
+
+
  ```
 Date date = new Date(System.currentTimeMillis() + EXPIRE_TIME);
 Algorithm algorithm = Algorithm.HMAC256(SECRET);
@@ -20,6 +22,26 @@ JWT.create()
 role: 角色；permission: 权限；ban: 封号状态
 ![role](https://upload-images.jianshu.io/upload_images/8807674-218309c1ee80b8fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
+```sql
+CREATE TABLE `role` (
+  `id` bigint(19) NOT NULL auto_increment COMMENT '主键id',
+  `role` varchar(200) default NULL,
+  `permission` varchar(200) default NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `user` (
+  `id` bigint(19) NOT NULL auto_increment COMMENT '主键id',
+  `username` varchar(200) default NULL,
+  `password` varchar(200) default NULL,
+  `role` varchar(200) default NULL,
+  `permission` varchar(200) default NULL,
+  `ban` varchar(200) default NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+```
+
 每个用户有对应的角色（user，admin），权限（normal，vip），而 user 角色默认权限为 normal， admin 角色默认权限为 vip（当然，user 也可以是 vip）
 
 ## 过滤器
@@ -28,7 +50,7 @@ role: 角色；permission: 权限；ban: 封号状态
 该过滤器主要有三步：
 1. 检验请求头是否带有 token ```((HttpServletRequest) request).getHeader("Token") != null```
 2. 如果带有 token，执行 shiro 的 login() 方法，将 token 提交到 Realm 中进行检验；如果没有 token，说明当前状态为游客状态（或者其他一些不需要进行认证的接口）
-```
+```java
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) throws UnauthorizedException {
         //判断请求的请求头是否带上 "Token"
